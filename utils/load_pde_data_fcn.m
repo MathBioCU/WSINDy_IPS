@@ -1,4 +1,4 @@
-function [U_obs,xs_obs,n,dims,dim,snr,sigma,noise,true_nz_weights,lhs,dx,dt] = load_pde_data_fcn(varargin)
+function [U_obs,xs_obs,n,dims,dim,snr,sigma,noise,true_nz_weights,lhs,dx,dt,Ntot] = load_pde_data_fcn(varargin)
 
 defaultUexact = [];
 defaultxs = [];
@@ -79,7 +79,7 @@ if isempty(U_exact)
         load(['~/Desktop/data/WSINDy_PDE/datasets/',pde_names{pde_num}],'U_exact','xs','lhs','true_nz_weights')
     elseif and(exist('Xscell','var'),pde_num==inf)
         if ~toggle_2ndorder
-            [U_exact,xs,lhs,~,dx,dt] = hist1storder(Xscell,t,'numx',numx,'exps',exps,'bw',bw,'subsamp',subsampN,'numsdv',numsdv,'custdom',custdom,'noise',Xsnz);
+            [U_exact,xs,lhs,~,dx,dt,Ntot] = hist1storder(Xscell,t,'numx',numx,'exps',exps,'bw',bw,'subsamp',subsampN,'numsdv',numsdv,'custdom',custdom,'noise',Xsnz);
         else
             if ~exist('Vscell','var')
                 Vscell = [];

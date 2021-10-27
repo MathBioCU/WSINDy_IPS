@@ -1,12 +1,12 @@
 %% particle data - Xscell, t
 
-exps = 1; 
+exps = 1:4;
 subsampN = 1;
 
-numx = 128 + 1;
-numsdv = 3;
+numx = 100 + 1;
+numsdv = 4;
 custdom = [];
-coarsen_data = [[0 1 1];[0 1 1];[0 1 1]];
+coarsen_data = [[0 1 1];[0 1 1];[0 1 0.5]];
 Xsnz = [0 1];
 scoord = 0;
 
@@ -27,47 +27,47 @@ custom_remove = {@(mat,lhs) find(all([mat(:,2)==0 mat(:,3)==0 ~ismember(mat,lhs,
 toggle_comb = 1;
 
 % local non-autonomous operators
-driftpolys=[0:5]; drifttrigs=[]; 
+driftpolys=[]; drifttrigs=[0:5];
 diffpolys=[]; difftrigs=[0:5]; crossdrift=0;
 
 % non-local operators
-convargs = {{'dimx',dim-1,'utagin',1,'utagout',1,'psitags',1,'Mon',[1:7],'Sing',[],'Exp',[],'Singeps',[],'svdtol',[1e-8]}};
+convargs = {{'dimx',dim-1,'utagin',1,'utagout',1,'psitags',1,'Mon',[0:5],'Sing',[-1:0.5:0],'Exp',[],'Singeps',[0.01],'svdtol',[1e-4]}};
 
 %% Set Discretization
 
 phi_class = {1,1};
-sm_x = 4;
-sm_t = 4;
+sm_x = 6;
+sm_t = 6;
 
-% %%% uncomment to set test fcn params manually
-% p_x = 6; mxs = 12;
-% tau_x = []; k_x = []; tauhat_x = []; 
-% p_t = 4; mts = 4;
-% tau_t = []; k_t = []; tauhat_t = [];
+%%% uncomment to set test fcn params manually
+p_x = 5; mxs = 24;
+tau_x = []; k_x = []; tauhat_x = []; 
+p_t = 7; mts = 12;
+tau_t = []; k_t = []; tauhat_t = [];
 
-%%% set test fcn params using cornerpoint
-tauhat_x = 20; tau_x = 10^-4;
-p_x = []; mxs = 1;
-tauhat_t = 1; tau_t = 10^-4; 
-p_t = []; mts = 1;
+% %%% set test fcn params using cornerpoint
+% tauhat_x = 0.5; tau_x = 10^-6;
+% p_x = []; mxs = 1;
+% tauhat_t = 0.3; tau_t = 10^-3;
+% p_t = []; mts = 1;
 
 %%% rescale coordinates and/or use approx. variance for improved conditioning
-scales = 0;
+scales = 2;
 covtol = 0;
 
 %%% trim rows with low particle density
 trim_tags = [1 zeros(1,dim-1) 0];
 trim_fcn = {@(col) max(col/max(abs(col)),eps)};
-inds_keep_fcn = @(col) log10(col)>-1;
+inds_keep_fcn = @(col) log10(col)>-inf;
 
 %% MSTLSQP
 
-lambda = 10.^(linspace(-4, -0, 100));
+lambda = 10.^(linspace(-4, 0, 100));
 gamma_tol = Inf;
 alpha = 0.5;
-maxits = 10;
+maxits = Inf;
 sparsity_scale = 0;
-excl_tags={'u^{1}_{lap}','u^{1}_{xx}'};
+excl_tags={'u^{1}_{lap}','u^{1}_{xx}','([x.^0.*t.^0]u^1)_{xx}','([x.^0.*y.^0.*t.^0]u^1)_{lap}'};
 excl_tols=0;
 tol = 10^-8; 
 maxQPits = 100; 
@@ -79,14 +79,15 @@ meth = 'STLSQP';
 wsindy_IPS_script;
 
 %% Display 
+% close all;
 
 print_loc = 1;
 toggle_plot_basis_fcn = 0;
 toggle_plot_sol = 0;
-toggle_plot_loss = 0;
+toggle_plot_loss = 1;
 toggle_plot_drift = 0;
-toggle_plot_IPforce = 0;
-toggle_plot_fft = {[1 2 3],1,1};
+toggle_plot_IPforce = 1;
+toggle_plot_fft = {[3 1 2],1,1};
 
 get_results;
 wsindy_IPS_display;

@@ -348,7 +348,7 @@ function [Xi,its,thrs_EL] = sparsifyDynamics_qp(Theta,dXdt,lambda,gamma,M,A,b,ex
     while its < max_its_stls
         if ~isempty(M)
             smallinds_new = or(abs(Xi)<LBs,abs(Xi)>UBs);
-            smallinds_new(excl_inds) = 0;
+%             smallinds_new(excl_inds) = 0;
             if or(length(find(smallinds_new))==nn,all(smallinds_new(:)==smallinds(:)))
                 return
             else

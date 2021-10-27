@@ -1,4 +1,4 @@
-function [U_exact,xs,lhs,true_nz_weights,dx,dt] = hist1storder(Xscell,t,varargin)
+function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,varargin)
 
     defaultnumx = 2^7+1;
     defaultexps = 1;
@@ -46,7 +46,8 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt] = hist1storder(Xscell,t,varargin
         true_nz_weights = {};
         L = length(exps);
         U_exact = repmat({zeros(length(x)-1,length(t))},1,1,L);
-
+        Ntot = 0;
+        
         for j=1:L
             X = Xscell{exps(j)};                
             [N,~,~] = size(X);
@@ -56,6 +57,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt] = hist1storder(Xscell,t,varargin
                 subsubs = randperm(length(subinds),floor(length(subinds)*nz(2)));
                 X(subsubs,:,:) = X(subsubs,:,:) + nz(1)*rms(reshape(X(subsubs,:,:),[],1))*randn(size(X(subsubs,:,:)));
             end
+            Ntot = Ntot+size(X,1);
             for tt=1:numt
                 if bw == 0
                     U_exact{j}(:,tt) = histcounts(X(:,:,tt),x,'normalization','pdf');
@@ -91,6 +93,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt] = hist1storder(Xscell,t,varargin
         if bw>0
             [xkd,ykd]= meshgrid(xs{1:2});
         end
+        Ntot=0;
         for j=1:L
             X = Xscell{exps(j)};
             [N,~,~] = size(X);
@@ -100,6 +103,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt] = hist1storder(Xscell,t,varargin
                 subsubs = randperm(length(subinds),floor(length(subinds)*nz(2)));
                 X(subsubs,:,:) = X(subsubs,:,:) + nz(1)*rms(reshape(X(subsubs,:,:),[],1))*randn(size(X(subsubs,:,:)));
             end
+            Ntot = Ntot+size(X,1);
 
             for tt=1:numt
                 if bw == 0

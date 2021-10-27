@@ -22,7 +22,7 @@ function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
             end
         end
         if isequal(uni{i},'{xx}')
-            ii=ismember(tags_pde_G,{'u^{1}_{xx}'});
+            ii=find(ismember(tags_pde_G,{'u^{1}_{xx}'}));
             if ~isempty(ii)
                 funcell{i}{1} = @(x,t) funcell{i}{1}(x,t) + W(ii);
             end
@@ -34,7 +34,7 @@ function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
             end
             sigf = funcell{i}{1};
         elseif isequal(uni{i},'{x}')
-            ii=ismember(tags_pde_G,{'u^{1}_{x}'});
+            ii=find(ismember(tags_pde_G,{'u^{1}_{x}'}));
             if ~isempty(ii)
                 if dim==2
                     funcell{i}{1} = @(x,t) funcell{i}{1}(x,t) + W(ii);
@@ -44,7 +44,7 @@ function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
             end
             driftx = funcell{i}{1};
         elseif isequal(uni{i},'{y}')
-            ii=ismember(tags_pde_G,{'u^{1}_{y}'});
+            ii=find(ismember(tags_pde_G,{'u^{1}_{y}'}));
             if ~isempty(ii)
                 funcell{i}{1} = @(x,y,t) funcell{i}{1}(x,y,t) + W(ii);
             end

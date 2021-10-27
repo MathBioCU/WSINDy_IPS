@@ -146,7 +146,7 @@ fprintf(1,'ET_build_Gb = %4.4f \n',ET_build_Gb);
 tic;
 gamma = (cond(G)>gamma_tol)*min(10.^(-(16+min(log10(lambda)))/2),0.1/norm(G));
 excl_inds={ismember(tags_pde_G,excl_tags)};
-if ~isempty(excl_inds)
+if ~all(cellfun(@(x)all(x==0),excl_inds))
     Aineq={-double(excl_inds{1})};
     if ~isempty(M)
         bineq={-excl_tols./M(excl_inds{1},:)}; 

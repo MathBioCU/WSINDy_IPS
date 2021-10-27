@@ -1,3 +1,5 @@
+warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle')
+
 [m,n] = size(W);
 
 str_wsindy = cell(n,1);
@@ -67,7 +69,9 @@ if ~isequal(print_loc,0)
     fprintf(print_loc,'\n scales = ');
     fprintf(print_loc,'%.2e ',scales) ;
     fprintf(print_loc,'\n      \n');
-    fprintf(print_loc,'Size of dataset = ');
+    fprintf(print_loc,'Total particles = ');
+    fprintf(print_loc,'%u ',Ntot);
+    fprintf(print_loc,'\nSize of U = ');
     fprintf(print_loc,'%u ',dims);
     fprintf(print_loc,'\nSize G = ');
     fprintf(print_loc,'%u ',size(G_fin));
@@ -78,18 +82,11 @@ if ~isequal(print_loc,0)
     end
     fprintf(print_loc,'\n[lambda_hat gamma] = ');
     fprintf(print_loc,'%.3e ',[lambda_hat gamma*norm(G_fin)]);
-    fprintf(print_loc,'\n[sigma_NR sigma] = ');
-    fprintf(print_loc,'%.3e ',[sigma_NR sigma]);
-    fprintf(print_loc,'\n      \n');
-    fprintf(print_loc,'STLS its = ');
+    fprintf(print_loc,'\nextrinsic noise ratio= ');
+    fprintf(print_loc,'%.3e',Xsnz(1));
+    fprintf(print_loc,'\nSTLS its = ');
     fprintf(print_loc,'%u ',its_all);
-    fprintf(print_loc,'\n ');
-    fprintf(1,'\nET_load_data = %4.4f \n',ET_load_data);
-    fprintf(1,'ET_build_lib = %4.4f \n',ET_build_lib);
-    fprintf(1,'ET_setdisc = %4.4f \n',ET_setdisc);
-    fprintf(1,'ET_build_Gb = %4.4f \n',ET_build_Gb);
-    fprintf(1,'ET_solve_sparse_reg = %4.4f \n',ET_solve_sparse_reg);
-    fprintf(1,'Elapsed time WSINDy = %4.4f \n',ET_wsindy);
+    fprintf(1,'\ntotal elapsed time = %4.4f \n',ET_wsindy);
 
     if ~all(print_loc==1)
         fclose(print_loc);

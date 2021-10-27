@@ -1,5 +1,4 @@
 figind=0;
-close all;
 
 %% plot basis fcn
 
