@@ -51,7 +51,7 @@ function [phifun,m,p] = get_phi_handle(N,varargin)
                     end
                     l = @(m,k,N) log((2*m-1)./m.^2).*(4*pi^2*k^2*m.^2-3*N^2*tauhat^2)-2*N^2*tauhat^2*log(tau);
                     mstar1 = sqrt(3)/pi*N/2/k*tauhat;
-                    mstar2 = 1/pi*tauhat*(N/2)/k*sqrt(log(exp(1)^3/tau^8));
+                    mstar2 = sqrt(log(exp(1)^3/tau^8))/pi*N/2/k*tauhat;
                     m = floor(min(fzero(@(m)l(m,k,N), [mstar1 mstar2]),(N-1)/2));
                     p = max(maxd+1,ceil(log(tau)/log(1-(1-1/m)^2)));
                 end

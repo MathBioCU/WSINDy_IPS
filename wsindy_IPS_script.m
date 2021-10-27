@@ -1,5 +1,13 @@
 %% load data
 
+if any(exps>length(Xscell))
+    disp('exps num does not exist,using available exps') 
+    exps = unique(min(exps,length(Xscell)));
+end
+if ~exist('true_nz_weight_tags','var')
+    true_nz_weight_tags = [];
+end
+
 Xscell(exps)=cellfun(@(x) x(1:NN,:,:),Xscell(exps),'uni',false);
 vars={'Xscell',Xscell,'t',t,'numx',numx,'exps',exps,'subsampN',subsampN,...
     'numsdv',numsdv,'coarsen_data',coarsen_data,'custdom',custdom,'Xsnz',Xsnz,...
@@ -25,7 +33,7 @@ fprintf(1,'ET_load_data = %4.4f \n',ET_load_data);
 %% set library
 
 tic,
-drifttags = get_drifttags(upol,driftpolys,drifttrigs,diffpolys,difftrigs,dim,crossdrift);
+drifttags = get_drifttags(driftpolys,drifttrigs,diffpolys,difftrigs,dim,crossdrift);
 [tags_pde_0,lib_list_0,~,lhs_ind_0,max_dx,max_dt,polys,customf,customconv]  = get_lib_tags(n,dim,lhs,max_dx,max_dt,polys,trigs,use_cross_dx,use_all_dt,custom_remove,custom_add,drifttags,convargs,true_nz_weights);
 ET_build_lib = toc;
 fprintf(1,'ET_build_lib = %4.4f \n',ET_build_lib);
@@ -156,8 +164,3 @@ vars = {'meth',meth,'keeprows',inds_keep,'cov',cov,'lambda',lambda,'gamma',gamma
 [W,resid,its_all,lossvals,thrs_EL,lambda_hat,G_fin,b_fin] = solve_sparsereg(G,b,vars{:});
 ET_solve_sparse_reg = toc;
 fprintf(1,'ET_solve_sparse_reg = %4.4f \n',ET_solve_sparse_reg);
-
-%% display 
-
-get_results;
-wsindy_IPS_display;

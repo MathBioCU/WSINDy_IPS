@@ -54,7 +54,7 @@ for i=1:length(drifttags)
             end
         end
         str_temp=['[',str_temp(1:end-2),']'];
-        customftemp = {{drifttags{i}{1},drifttags{i}{2}(j,:),drifttags{i}{3},[str_temp,'u^',num2str(drifttags{i}{1}),')_{',str_pdx,'}']}};
+        customftemp = {{drifttags{i}{1},drifttags{i}{2}(j,:),drifttags{i}{3},['(',str_temp,'u^',num2str(drifttags{i}{1}),')_{',str_pdx,'}']}};
         customf = [customf,customftemp];
     end
 end

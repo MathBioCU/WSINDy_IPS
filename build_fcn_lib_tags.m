@@ -1,8 +1,6 @@
-
 function [tags,lib_list,pdx_list] = build_fcn_lib_tags(n,dim,max_dx,max_dt,polys,trigs,use_cross_dx,use_all_dt)
 tags = [];
 for p = 1:length(polys)
-%    tags = [tags;partitionNk(polys(p),n)];
     [num,den] = numden(sym(polys(p)));
     tags = [tags;partitionNk(eval(num),n)/eval(den)];
 end

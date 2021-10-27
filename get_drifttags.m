@@ -1,4 +1,5 @@
-function customftags = get_drifttags(upol,driftpolys,drifttrigs,diffpolys,difftrigs,dim,crossdrift)
+function customftags = get_drifttags(driftpolys,drifttrigs,diffpolys,difftrigs,dim,crossdrift)
+    upol=1;
     customftags={};
     diff1=[eye(dim-1) zeros(dim-1,1)];
     drifttags= [];
@@ -38,7 +39,7 @@ function customftags = get_drifttags(upol,driftpolys,drifttrigs,diffpolys,difftr
     elseif dim-1==2
         [a,b] = ndgrid(difftrigs);
         abmat = [a(:) b(:)];
-        abmat=abmat(~all(abmat==[0 0],2),:);
+%         abmat=abmat(~all(abmat==[0 0],2),:);
     end
     difftags = [difftags; abmat*1i];    
     difftags=[difftags zeros(size(difftags,1),1)];

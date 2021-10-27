@@ -1,12 +1,12 @@
 %% particle data - Xscell, t
 
-exps = 1:32; 
+exps = 1:8; 
 subsampN = 1;
 
 numx = 256 + 1;
 numsdv = 3;
 custdom = [];
-coarsen_data = [[0 1 1];[0 1 1];[0 2 0.4]];
+coarsen_data = [[0 1 1];[0 1 1];[0 1 1]];
 Xsnz = [0 1];
 scoord = 0;
 
@@ -16,18 +16,19 @@ dim = size(Xscell{1},2)+1;
 %% Set Library
 
 % local autonomous operators
-max_dx = 2;
-max_dt = 2;
-polys = 1;
+max_dx = 0;
+max_dt = 0;
+polys = [];
 trigs = [];
 use_all_dt = 0;
 use_cross_dx = 0;
 custom_add = [];
-custom_remove = {@(mat,lhs) find(all([mat(:,2)==0 ~ismember(mat,lhs,'rows')],2))};
+custom_remove = {@(mat,lhs) find(all([mat(:,2)==0 mat(:,3)==0 ~ismember(mat,lhs,'rows')],2))};
 toggle_comb = 1;
 
 % local non-autonomous operators
-upol=1; driftpolys=[2:8]; drifttrigs=[]; diffpolys=[1:8]; difftrigs=[]; crossdrift=0;
+driftpolys=[0 2:8]; drifttrigs=[]; 
+diffpolys=[]; difftrigs=[0:7]; crossdrift=0;
 
 % non-local operators
 convargs = {{'dimx',dim-1,'utagin',1,'utagout',1,'psitags',1,'Mon',[0:7],'Sing',[],'Exp',[],'Singeps',[],'svdtol',[1e-8]}};
@@ -45,9 +46,9 @@ sm_t = 4;
 % tau_t = []; k_t = []; tauhat_t = [];
 
 %%% set test fcn params using cornerpoint
-tauhat_x = 1; tau_x = 10^-3;
+tauhat_x = 1; tau_x = 10^-4;
 p_x = []; mxs = 1;
-tauhat_t = 1; tau_t = 10^-3; 
+tauhat_t = 1; tau_t = 10^-4; 
 p_t = []; mts = 1;
 
 %%% rescale coordinates and/or use approx. variance for improved conditioning
@@ -73,6 +74,10 @@ maxQPits = 100;
 dispQP = 'off';
 meth = 'STLSQP';
 
+%% run alg
+
+wsindy_IPS_script;
+
 %% Display 
 
 print_loc = 1;
@@ -81,8 +86,7 @@ toggle_plot_sol = 0;
 toggle_plot_loss = 0;
 toggle_plot_drift = 0;
 toggle_plot_IPforce = 0;
-toggle_plot_fft = {};{[1 2 3],1,1};
+toggle_plot_fft = {[1 2 3],1,1};
 
-%% run alg
-
-wsindy_IPS_script
+get_results;
+wsindy_IPS_display;

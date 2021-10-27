@@ -23,7 +23,7 @@ function [Theta_pdx,tags_pde,lib_list,lhs_ind,M_full,axi] = combterms(Theta_pdx,
         end
         coords='xyt';
         utag=num2str(1);
-        fstr=@(tags,dx) ['[x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{',dx,'}'];
+        fstr=@(tags,dx) ['([x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{',dx,'}'];
         fstr2=@(tags) ['(grad[x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{div}'];
         for j=1:size(customfpolys,1)
             tags=customfpolys(j,:);
