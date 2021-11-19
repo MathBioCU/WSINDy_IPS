@@ -30,6 +30,25 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
     [~,d,~] = size(Xscell{1});
     numt = length(t);
     dt = t(2)-t(1);
+    
+    true_nz_weights = {};
+    L = length(exps);
+    Ns = floor(subsamp*cellfun(@(x) size(x,1), Xscell(exps)));
+    Nscum = [0 cumsum(Ns)];
+    Ntot = Nscum(end);
+    Xall = zeros(Nscum(end),d,numt);
+    for j=1:L
+        X = Xscell{exps(j)};
+        [N,~,~] = size(X);
+        subinds = randperm(N,Ns(j));
+        X = X(subinds,:,:);
+        if nz(1)>0
+            subsubs = randperm(length(subinds),floor(length(subinds)*nz(2)));
+            X(subsubs,:,:) = X(subsubs,:,:) + nz(1)*rms(reshape(X(subsubs,:,:),[],1))*randn(size(X(subsubs,:,:)));
+        end
+        Xall(Nscum(j)+1:Nscum(j+1),:,:)=X;
+    end
+
     if d ==1
         if isempty(custdom)
             mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1)),Xscell(exps)));
@@ -43,30 +62,14 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
         dx = x(2)-x(1);
         lhs = [1 0 1];
         xs = {(x(1:end-1)+x(2:end))/2,t};
-        true_nz_weights = {};
-        L = length(exps);
-        U_exact = repmat({zeros(length(x)-1,length(t))},1,1,L);
-        Ntot = 0;
-        
-        for j=1:L
-            X = Xscell{exps(j)};                
-            [N,~,~] = size(X);
-            subinds = randperm(N,floor(subsamp*N));
-            X = X(subinds,:,:);
-            if nz(1)>0
-                subsubs = randperm(length(subinds),floor(length(subinds)*nz(2)));
-                X(subsubs,:,:) = X(subsubs,:,:) + nz(1)*rms(reshape(X(subsubs,:,:),[],1))*randn(size(X(subsubs,:,:)));
+        U_exact = {zeros(length(x)-1,length(t))};       
+        for tt=1:numt
+            if bw == 0
+                U_exact{1}(:,tt) = histcounts(Xall(:,:,tt),x,'normalization','pdf');
+            elseif bw >0
+                [U_exact{1}(:,tt),~,~] = ksdensity(Xall,xs{1},'kernel','epanechnikov','bandwidth',bw);
             end
-            Ntot = Ntot+size(X,1);
-            for tt=1:numt
-                if bw == 0
-                    U_exact{j}(:,tt) = histcounts(X(:,:,tt),x,'normalization','pdf');
-                elseif bw >0
-                    [U_exact{j}(:,tt),~,~] = ksdensity(X,xs{1},'kernel','epanechnikov','bandwidth',bw);
-                end
-            end
-        end
-        U_exact = {mean(cell2mat(U_exact),3)};
+        end        
     elseif d==2
         if isempty(custdom)
             mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1)),Xscell(exps)));
@@ -89,31 +92,17 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
         xs = {(x(1:end-1)+x(2:end))/2,(y(1:end-1)+y(2:end))/2,t};
         true_nz_weights = {[]};
         L = length(exps);
-        U_exact = repmat({zeros(length(x)-1,length(y)-1,numt)},1,1,1,L);
         if bw>0
             [xkd,ykd]= meshgrid(xs{1:2});
         end
-        Ntot=0;
-        for j=1:L
-            X = Xscell{exps(j)};
-            [N,~,~] = size(X);
-            subinds = randperm(N,floor(subsamp*N));
-            X = X(subinds,:,:);
-            if nz(1)>0
-                subsubs = randperm(length(subinds),floor(length(subinds)*nz(2)));
-                X(subsubs,:,:) = X(subsubs,:,:) + nz(1)*rms(reshape(X(subsubs,:,:),[],1))*randn(size(X(subsubs,:,:)));
+        U_exact = {zeros(length(x)-1,length(y)-1,length(t))};
+        for tt=1:numt
+            if bw == 0
+                U_exact{1}(:,:,tt) = histcounts2(Xall(:,1,tt),Xall(:,2,tt),x,y,'normalization','pdf');
+            elseif bw >0
+                Utemp = ksdensity(Xall(:,:,tt),[xkd(:) ykd(:)],'kernel','epanechnikov','bandwidth',bw);
+                U_exact{1}(:,:,tt) = reshape(Utemp,length(xs{2}),[])';
             end
-            Ntot = Ntot+size(X,1);
-
-            for tt=1:numt
-                if bw == 0
-                    U_exact{j}(:,:,tt) = histcounts2(X(:,1,tt),X(:,2,tt),x,y,'normalization','pdf');
-                elseif bw >0
-                    Utemp = ksdensity(X(:,1:2,tt),[xkd(:) ykd(:)],'kernel','epanechnikov','bandwidth',bw);
-                    U_exact{j}(:,:,tt) = reshape(Utemp,length(xs{2}),[])';
-                end
-            end
-        end
-        U_exact = {mean(cell2mat(U_exact),4)};
+        end        
     end
 end

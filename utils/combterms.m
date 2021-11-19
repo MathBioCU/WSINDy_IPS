@@ -23,7 +23,7 @@ function [Theta_pdx,tags_pde,lib_list,lhs_ind,M_full,axi] = combterms(Theta_pdx,
         end
         coords='xyt';
         utag=num2str(1);
-        fstr=@(tags,dx) ['([x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{',dx,'}'];
+        fstr=@(tags,dx) ['[x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{',dx,'}'];
         fstr2=@(tags) ['(grad[x.^',num2str(tags(1)),'.*y.^',num2str(tags(2)),'.*t.^0]u^',utag,')_{div}'];
         for j=1:size(customfpolys,1)
             tags=customfpolys(j,:);
@@ -58,7 +58,7 @@ function [Theta_pdx,tags_pde,lib_list,lhs_ind,M_full,axi] = combterms(Theta_pdx,
             end
             inds_all = unique([inds_all(:);inds(:)]);
             if ~isempty(axi)
-                newaxi = [newaxi;axi(inds(1))];
+                newaxi = [newaxi;axi(inds(1),:)];
             end
             newlibs = [newlibs;NaN*ones(1,size(lib_list,2))];
         end
@@ -74,7 +74,7 @@ function [Theta_pdx,tags_pde,lib_list,lhs_ind,M_full,axi] = combterms(Theta_pdx,
     tags_pde = [tags_pde(inds_retain),newtags];
     lib_list = [lib_list(inds_retain,:);newlibs];
     if ~isempty(axi)
-        axi = [axi(inds_retain);newaxi];
+        axi = [axi(inds_retain,:);newaxi];
     end
 end
 
