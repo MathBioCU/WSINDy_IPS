@@ -21,8 +21,8 @@ function [corners,sig_est] = findcornerpts(U_obs,xs)
         Ufft = mean(Ufft,2);
         Ufft = cumsum(Ufft);            
         Ufft = Ufft(1:ceil(L/2),:);
-        errs = zeros(NN-2,1);
-        for k=2:NN-1
+        errs = zeros(NN,1);
+        for k=1:NN
            subinds1 = 1:k;
            subinds2 = k:NN;
            Ufft_av1 = Ufft(subinds1);
@@ -31,11 +31,11 @@ function [corners,sig_est] = findcornerpts(U_obs,xs)
            m2 = range(Ufft_av2)/range(xx(subinds2));
            L1 = min(Ufft_av1)+m1*(xx(subinds1)-xx(1));
            L2 = max(Ufft_av2)+m2*(xx(subinds2)-xx(end));
-           errs(k-1) = sqrt(sum(((L1-Ufft_av1)./Ufft_av1).^2) + sum(((L2-Ufft_av2)./Ufft_av2).^2)); % relative l2 
+           errs(k) = sqrt(sum(((L1-Ufft_av1)./Ufft_av1).^2) + sum(((L2-Ufft_av2)./Ufft_av2).^2)); % relative l2 
         end
         [~,tstarind] = min(errs);
         tstar = -xx(tstarind);
-        corners{d} = [tstar max(NN-tstarind-3,1)];
+        corners{d} = [tstar max(NN-tstarind+1,1)];
     end
     Ufft = abs(fftshift(fft(permute(U_obs,shift))));
     sig_est = sqrt(mean(reshape(Ufft([1:tstarind-3 2*NN-tstarind+2:end],:),[],1).^2)/L);

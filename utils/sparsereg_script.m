@@ -1,7 +1,11 @@
 %% solve sparse regression problem
 tic;
 gamma = (cond(G)>gamma_tol)*min(10.^(-(16+min(log10(lambda)))/2),0.1/norm(G));
-excl_inds={ismember(tags_pde_G,excl_tags)};
+if exist('excl_tags','var')
+    excl_inds={ismember(tags_pde_G,excl_tags)};
+else
+    excl_inds={};
+end
 if ~all(cellfun(@(x)all(x==0),excl_inds))
     Aineq={-double(excl_inds{1})};
     if ~isempty(M)

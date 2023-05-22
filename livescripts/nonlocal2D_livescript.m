@@ -18,7 +18,8 @@ if isequal(examples{select_example},'extrinsic_noise')
     load('datasets/log2D_N4000_nu0.mat'); 
     extrinsic_nz=10^(-1);
 elseif isequal(examples{select_example},'constant_intrinsic_noise')
-    load('datasets/log2D_N4000.mat'); extrinsic_nz = 0;
+    load('datasets/log2D_N4000.mat'); 
+    extrinsic_nz = 0;
 end
 %% Compute approximate particle distribution (Xscell, t)
 
@@ -29,7 +30,7 @@ exps = 1:8;
 NN = size(Xscell{1},1);
 
 %%% choose histogram grid resolution
-numx = 128 + 1;
+numx = 64 + 1;
 numsdv = 3;
 custdom = [];
 coarsen_data = [[0 1 1];[0 1 1];[0 1 1]];

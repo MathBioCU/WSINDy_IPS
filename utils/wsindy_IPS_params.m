@@ -56,9 +56,9 @@ scales = 2;
 covtol = 0;
 
 %%% trim rows with low particle density
-trim_tags = [1 zeros(1,dim-1) 0];
-trim_fcn = {@(col) max(col/max(abs(col)),eps)};
-inds_keep_fcn = @(col) log10(col)>-inf;
+trim_tags = [1 zeros(1,dim-1) 0]; % column corresponding to particle density
+trim_fcn = {@(col) max(col/max(abs(col)),eps)}; % map density values to (0,1]
+inds_keep_fcn = @(col) log10(col)>-2; % keep rows that have at least 1% of max density
 
 %% MSTLSQP
 

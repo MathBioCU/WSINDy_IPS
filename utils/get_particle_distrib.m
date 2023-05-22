@@ -6,7 +6,7 @@ if ~exist('true_nz_weight_tags','var')
     true_nz_weight_tags = [];
 end
 
-Xscell(exps)=cellfun(@(x) x(1:NN,:,:),Xscell(exps),'uni',false);
+Xscell(exps)=cellfun(@(x) x(randperm(end,NN),:,:),Xscell(exps),'uni',false);
 vars={'Xscell',Xscell,'t',t,'numx',numx,'exps',exps,...
     'numsdv',numsdv,'coarsen_data',coarsen_data,'custdom',custdom,'Xsnz',Xsnz,...
     'Shift',scoord,'true_nz_weights',true_nz_weight_tags};
