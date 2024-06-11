@@ -44,6 +44,7 @@ addParameter(inp,'coarsen_data',defaultcoarsen_data);
 addParameter(inp,'avg_data',defaultavg_data);
 addParameter(inp,'Xsnz',defaultXsnz);
 addParameter(inp,'Shift',defaultShift);
+addParameter(inp,'norml','pdf');
 parse(inp,varargin{:});  
 
 pde_num = inp.Results.pde_num;
@@ -67,6 +68,7 @@ avg_data = inp.Results.avg_data;
 custdom = inp.Results.custdom;
 Xsnz = inp.Results.Xsnz;
 Shift = inp.Results.Shift;
+norml = inp.Results.norml;
 
 %% load data: U_obs, xs_obs, true_nz_weights, lhs
 
@@ -79,7 +81,7 @@ if isempty(U_exact)
         load(['~/Desktop/data/WSINDy_PDE/datasets/',pde_names{pde_num}],'U_exact','xs','lhs','true_nz_weights')
     elseif and(exist('Xscell','var'),pde_num==inf)
         if ~toggle_2ndorder
-            [U_exact,xs,lhs,~,dx,dt,Ntot] = hist1storder(Xscell,t,'numx',numx,'exps',exps,'bw',bw,'subsamp',subsampN,'numsdv',numsdv,'custdom',custdom,'noise',Xsnz);
+            [U_exact,xs,lhs,~,dx,dt,Ntot] = hist1storder(Xscell,t,'numx',numx,'exps',exps,'bw',bw,'subsamp',subsampN,'numsdv',numsdv,'custdom',custdom,'noise',Xsnz,'norml',norml);
         else
             if ~exist('Vscell','var')
                 Vscell = [];

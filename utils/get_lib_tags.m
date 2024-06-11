@@ -13,7 +13,6 @@ for j=1:length(true_nz_weight_tags)
     end
 end
 lib_list = unique([lib_list;custom_add],'rows');
-
 inds = [];
 for i=1:length(custom_remove)
     if isequal(class(custom_remove{i}),'function_handle')
@@ -23,6 +22,7 @@ for i=1:length(custom_remove)
         lib_list = lib_list(~ismember(lib_list,custom_remove{i},'rows'),:);
     end
 end
+
 [tags_pde,lib_list] = build_str_tags(lib_list,dim,n);
 
 

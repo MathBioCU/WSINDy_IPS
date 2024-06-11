@@ -1,4 +1,4 @@
-warning('off','MATLAB:dispatcher:UnresolvedFunctionHandle')
+warning('off','MATLAB:dispatcher:UnreWsolvedFunctionHandle')
 [m,n] = size(W);
 
 str_wsindy = cell(n,1);

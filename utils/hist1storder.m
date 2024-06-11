@@ -16,6 +16,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
     addParameter(p,'subsamp',defaultsubsamp);
     addParameter(p,'custdom',defaultcustdom);
     addParameter(p,'noise',defaultnoise);
+    addParameter(p,'norml','pdf');
     
     parse(p,varargin{:});   
 
@@ -26,6 +27,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
     subsamp = p.Results.subsamp;
     custdom = p.Results.custdom;
     nz = p.Results.noise;
+    norml = p.Results.norml;
 
     [~,d,~] = size(Xscell{1});
     numt = length(t);
@@ -51,8 +53,8 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
 
     if d ==1
         if isempty(custdom)
-            mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1)),Xscell(exps)));
-            stdx = mean(cellfun(@(x)std(reshape(x(:,1,:),[],1)),Xscell(exps)));
+            mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1),'omitnan'),Xscell(exps)));
+            stdx = mean(cellfun(@(x)std(reshape(x(:,1,:),[],1),'omitnan'),Xscell(exps)));
             minX = min(cellfun(@(x)min(reshape(x(:,1,:),[],1)),Xscell(exps)));
             maxX = max(cellfun(@(x)max(reshape(x(:,1,:),[],1)),Xscell(exps)));
             x = linspace(max(mux-numsdv*stdx,minX),min(mux+numsdv*stdx,maxX),numx);
@@ -65,19 +67,19 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
         U_exact = {zeros(length(x)-1,length(t))};       
         for tt=1:numt
             if bw == 0
-                U_exact{1}(:,tt) = histcounts(Xall(:,:,tt),x,'normalization','pdf');
+                U_exact{1}(:,tt) = histcounts(Xall(:,:,tt),x,'normalization',norml);
             elseif bw >0
                 [U_exact{1}(:,tt),~,~] = ksdensity(Xall,xs{1},'kernel','epanechnikov','bandwidth',bw);
             end
         end        
     elseif d==2
         if isempty(custdom)
-            mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1)),Xscell(exps)));
-            stdx = mean(cellfun(@(x)std(reshape(x(:,1,:),[],1)),Xscell(exps)));
+            mux = mean(cellfun(@(x)mean(reshape(x(:,1,:),[],1),'omitnan'),Xscell(exps)));
+            stdx = mean(cellfun(@(x)std(reshape(x(:,1,:),[],1),'omitnan'),Xscell(exps)));
             minX = min(cellfun(@(x)min(reshape(x(:,1,:),[],1)),Xscell(exps)));
             maxX = max(cellfun(@(x)max(reshape(x(:,1,:),[],1)),Xscell(exps)));
-            muy = mean(cellfun(@(x)mean(reshape(x(:,2,:),[],1)),Xscell(exps)));
-            stdy = mean(cellfun(@(x)std(reshape(x(:,2,:),[],1)),Xscell(exps)));
+            muy = mean(cellfun(@(x)mean(reshape(x(:,2,:),[],1),'omitnan'),Xscell(exps)));
+            stdy = mean(cellfun(@(x)std(reshape(x(:,2,:),[],1),'omitnan'),Xscell(exps)));
             minY = min(cellfun(@(x)min(reshape(x(:,2,:),[],1)),Xscell(exps)));
             maxY = max(cellfun(@(x)max(reshape(x(:,2,:),[],1)),Xscell(exps)));
             x = linspace(max(mux-numsdv*stdx,minX),min(mux+numsdv*stdx,maxX),numx);
@@ -98,7 +100,7 @@ function [U_exact,xs,lhs,true_nz_weights,dx,dt,Ntot] = hist1storder(Xscell,t,var
         U_exact = {zeros(length(x)-1,length(y)-1,length(t))};
         for tt=1:numt
             if bw == 0
-                U_exact{1}(:,:,tt) = histcounts2(Xall(:,1,tt),Xall(:,2,tt),x,y,'normalization','pdf');
+                U_exact{1}(:,:,tt) = histcounts2(Xall(:,1,tt),Xall(:,2,tt),x,y,'normalization',norml);
             elseif bw >0
                 Utemp = ksdensity(Xall(:,:,tt),[xkd(:) ykd(:)],'kernel','epanechnikov','bandwidth',bw);
                 U_exact{1}(:,:,tt) = reshape(Utemp,length(xs{2}),[])';

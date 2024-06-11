@@ -5,11 +5,13 @@ end
 if ~exist('true_nz_weight_tags','var')
     true_nz_weight_tags = [];
 end
-
+if ~exist('norml','var')
+    norml = 'pdf';
+end
 Xscell(exps)=cellfun(@(x) x(randperm(end,NN),:,:),Xscell(exps),'uni',false);
 vars={'Xscell',Xscell,'t',t,'numx',numx,'exps',exps,...
     'numsdv',numsdv,'coarsen_data',coarsen_data,'custdom',custdom,'Xsnz',Xsnz,...
-    'Shift',scoord,'true_nz_weights',true_nz_weight_tags};
+    'Shift',scoord,'true_nz_weights',true_nz_weight_tags,'norml',norml};
 tic;
 rng('shuffle');
 vartot = {'U_exact','xs','lhs','true_nz_weights','pde_num','sigma_NR','noise_dist','noise_alg','Xscell','t',...
