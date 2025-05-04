@@ -1,4 +1,4 @@
-function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
+function [driftx,sigf,funcell,drifty] = getdrift(W,customf,tags_pde_G,dim)
     tagends = cellfun(@(x) x(strfind(x,'{'):strfind(x,'}')),tags_pde_G, 'Uni', 0);
     uni=unique(tagends);
 
@@ -9,7 +9,9 @@ function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
         elseif dim==3
             funcell{i} = {@(x,y,t)0*x+0*y+0*t, uni{i}};
         end
+        %%% find all terms with this tagend
         inds = find(ismember(tagends,uni(i)));
+        %%% take linear combination of these terms
         for j=1:length(inds)
             tagsf = tags_pde_G{inds(j)};
             coeff= W(ismember(tags_pde_G,{tagsf}));
@@ -21,6 +23,7 @@ function [driftx,sigf,funcell] = getdrift(W,customf,tags_pde_G,dim)
                 end
             end
         end
+        %%% include autonomous terms
         if isequal(uni{i},'{xx}')
             ii=find(ismember(tags_pde_G,{'u^{1}_{xx}'}));
             if ~isempty(ii)

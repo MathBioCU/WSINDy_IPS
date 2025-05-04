@@ -1,72 +1,31 @@
 close all;
 set(0,'DefaultFigureWindowStyle','docked')
-
-
-flz = {'20240604/r02c09f09_ROI1.mat',... %1.5
-       '20240604/r03c11f05_ROI1.mat',... % 1.5
-       '20240604/r02c09f08_ROI1.mat',... % 2
-       '20240604/r02c09f09_ROI2.mat',... % 2
-       '20240604/r03c11f05_ROI2.mat',... % 2
-       '20240604/r03c11f06_ROI1.mat',... % 2
-       };
-ff = 1;
-
-load([dr,flz{ff}])
-N = tracks.NumTracks;
-M = tracks.MaxFrame;
-X = zeros(N,2,M)+NaN;
-clf
-for n=1:N
-    X(n,:,tracks.Tracks(n).Frames) = cell2mat(tracks.Tracks(n).Data.Centroid')';
-    % X(n,1,:) = fillmissing(X(n,1,:),'linear','EndValues','none');
-    % X(n,2,:) = fillmissing(X(n,2,:),'linear','EndValues','none');
-end
-t = 0:8/60:(M-1)*8/60;
-Xscell = {X};
-
-%%% Compute approximate particle distribution $U$ from particles _Xscell_ 
-
-exps = 1; %choose experiments from Xscell to use in regression (if Xscell contains multiple exps)
-NN = N; %choose number of particles to use from each experiment
-numx = 48 + 1; %choose histogram grid resolution
-numsdv = inf;
-custdom = [];
-coarsen_data = [[0 1 1];[0 1 1];[0.05 1 1]];
-scoord = 0;
-Xsnz = [0 1]; %set extrinsic noise level
-norml = 'count';
-
-get_particle_distrib
-
 %% spatial domain
-Nx = 80;
-x = linspace(xs_obs{1}(1),xs_obs{1}(end),Nx);
+Nx = 256;
+x = linspace(-3,3,Nx);
 dx = mean(diff(x));
-y = xs_obs{2}(1):dx:xs_obs{2}(end);
+y = x;
 [xx,yy] = meshgrid(x,y);%%% x and y are flipped
-Ny = length(y); 
+Ny = length(y);
 
 %% initial conditions
-[xx_0,yy_0] = meshgrid(xs_obs{1},xs_obs{2});
-rho0 = interp2(xx_0,yy_0,U_obs{1}(:,:,1)',xx,yy);
-rho0 = smoothdata(rho0,1,"gaussian",Ny/10);
-rho0 = smoothdata(rho0,2,"gaussian",Nx/10);
-% l = 10;p=2;
-% rho0(1:l,:) = rho0(1:l,:).*((1-(l-1:-1:0)/(l-1)).^p)';
-% rho0(end-l+1:end,:) = rho0(end-l+1:end,:).*((1-(l-1:-1:0)/(l-1)).^p)';
+rho0 = exp(-hypot(xx+1,yy-1).^2/1)+exp(-hypot(xx-1,yy+1).^2/6);
 figure(1);
-surf(xx,yy,rho0)
+surf(xx,yy,rho0,'edgecolor','none')
 view(0, 90)
-colorbar
 xlabel x, ylabel y
 axis equal
-
+colorbar
 %% local forces
-% nu_mat = 0.02+0*xx; %fzero(@ (ep) 4*dx^2-ep*(-2*log(eps)-log(2*pi*ep)),1);
-nu_mat = sigf(xx,yy,0);
+nu_mat = xx*0+0.1;
+
+Vx = @(x,y)x*0;
+Vy = @(x,y)y*0;
+vloc_x = Vx(xx,yy);
+vloc_y = Vy(xx,yy);
+
 [D1x,D2x] = getDmats(x);
 [D1y,D2y] = getDmats(y);
-
 Ex = speye(Nx); Ex(1,1) = 0; Ex(end,end) = 0;
 Ey = speye(Ny); Ey(1,1) = 0; Ey(end,end) = 0;
 Dx = kron(D1x,Ey); Dy = kron(Ex,D1y);
@@ -74,25 +33,11 @@ Dlap = kron(Ex,D2y)+kron(D2x,Ey);
 Dlap_lin = Dlap*spdiags(nu_mat(:),0,Nx*Ny);
 
 %% growth term
-fg = @(u) u*0;
-w = W;
+% fg = @(u) 0.5*u.*(2-u);
+fg = @(u) 0*u;
 pows = [];
 coeffs = [];
 lin_growth = 0;
-for j=1:length(tags_pde_G)
-    if isequal(tags_pde_G{j}(end-2:end),'_{}')
-        if w(j)~=0
-            pow = str2num(tags_pde_G{j}(end-4));
-            if pow~=1
-                pows = [pows pow];
-                coeffs = [coeffs w(j)];
-                fg = @(u) fg(u)+w(j)*u.^pows(end);
-            else
-                lin_growth = w(j);
-            end
-        end
-    end
-end
 growthmat = ones(Ny,Nx);
 growthmat(:,1) = 0; growthmat(:,end) = 0;
 growthmat(1,:) = 0; growthmat(end,:) = 0;
@@ -103,8 +48,9 @@ uplot=linspace(min(rho0(:)),2*max(rho0(:)),100);
 plot(uplot,fg(uplot)+lin_growth*uplot)
 
 %% nonlocal forces
-fx = @(x,y)f_learnedcell{1}(x,y,0);
-fy = @(x,y)f_learnedcell{2}(x,y,0);
+sig = 0.2;
+fx = @(x,y) -20*x./max(eps,hypot(x,y)).*[exp(-hypot(x,y)/sig) - 0.5*exp(-hypot(x,y)/sig/2)];
+fy = @(x,y) -20*y./max(eps,hypot(x,y)).*[exp(-hypot(x,y)/sig) - 0.5*exp(-hypot(x,y)/sig/2)];
 
 zz_x = fliplr([x(end)-x x(1)-x(2:end)]);
 zz_y = fliplr([y(end)-y y(1)-y(2:end)]);
@@ -123,32 +69,17 @@ imagesc(zz_x,zz_y,hypot(forceX,forceY))
 axis equal
 colorbar
 
-%% local forces
-x_loc = cellfun(@(c)isequal(c{2},'{x}'),drift);
-y_loc = cellfun(@(c)isequal(c{2},'{y}'),drift);
-if any(x_loc)
-    Vx = @(x,y)drift{x_loc}{1}(x,y,0);
-    vloc_x = Vx(xx,yy);
-else
-    vloc_x = sparse(xx*0);
-end
-if any(y_loc)
-    Vy = @(x,y)drift{y_loc}{1}(x,y,0);
-    vloc_y = Vy(xx,yy);
-else
-    vloc_y = sparse(xx*0);
-end
-
 %% set bcs
 
-bc='Dirichlet';
-% bc='Neumann';
+% bc='Dirichlet';
+bc='Neumann';
 
 %% sim
-close all
-gap = 50;
-dt = mean(diff(xs_obs{end}))/gap;
-M = length(xs_obs{end});
+
+gap = 10;
+dt = 0.001;
+T = 1;
+M = ceil(T/dt/gap);
 
 t = 0:dt*gap:(M-1)*dt*gap;
 rhos = zeros(Ny,Nx,M);
@@ -161,8 +92,8 @@ BC_mask(:,1) = 1;
 BC_mask(:,end) = 1;
 BC_mask(1,:) = 1;
 BC_mask(end,:) = 1;
-NLrad = 1; % kill flux near boundaries
-nl_mask = (1-((NLrad:-1:0)/NLrad).^2).^2;
+NLrad = 0; % kill flux near boundaries
+nl_mask = (1-((NLrad:-1:0)/max(NLrad,eps)).^2).^2;
 
 for tt = 1:(M-1)*gap
     tic
@@ -218,7 +149,7 @@ for tt = 1:(M-1)*gap
 
         % BC_rhs = interp2(xx_0,yy_0,U_obs{1}(:,:,ceil(tt/gap))',xx,yy)*(ceil(tt/gap)-tt/gap) ...
         %     + interp2(xx_0,yy_0,U_obs{1}(:,:,ceil(tt/gap)+1)',xx,yy)*(tt/gap-floor(tt/gap));
-        BC_rhs = interp2(xx_0,yy_0,U_obs{1}(:,:,ceil(tt/gap))',xx,yy);
+        BC_rhs = xx*0+1;
         BC_rhs = BC_rhs.*BC_mask;
         BC_rhs = BC_rhs(:);
     end
@@ -243,18 +174,9 @@ for tt = 1:(M-1)*gap
     disp([tt/M/gap toc max(rho(:))])
     if mod(tt,gap)==0 
         rhos(:,:,tt/gap+1) = rho;
-
-        surf(x,y,rho,'edgecolor','none')
-        view([0 90])
-        colorbar
+        plot(y,mean(rho,2));
+        ylim([0 2*max(rho0(:))])
         drawnow
-
-        % rhos(:,:,tt/gap+1) = rho;
-        % plot(y,mean(rho,2));
-        % hold on
-        % plot(xs_obs{2},mean(U_obs{1}(:,:,tt/gap)',2))
-        % hold off
-        % ylim([0 2*max(rho0(:))])
     end
 end
 
@@ -266,33 +188,9 @@ lhs = [1 0 0 1];
 %% view 2D
 figure(8);clf
 for j=1:length(t)
-    subplot(2,1,1)
     surf(x,y,U_exact{1}(:,:,j),'edgecolor','none')
     view([0 90])
-    % xlim([50 350])
-    % ylim([100 950])
-    zlim([0 3])
     colorbar
-    subplot(2,1,2)
-    surf(xs_obs{1},xs_obs{2},U_obs{1}(:,:,j)','edgecolor','none')
-    view([0 90])
-    % xlim([50 350])
-    % ylim([100 950])
-    zlim([0 3])
-    colorbar
-    % axis equal
-    drawnow
-end
-
-%% view 1D
-
-for j=1:length(t)
-    plot(y,mean(U_exact{1}(:,:,j),2));
-    hold on
-    plot(xs_obs{2},mean(U_obs{1}(:,:,j)',2))
-    hold off
-    ylim([0 2])
-    % pause(0.1)
     drawnow
 end
 
@@ -307,8 +205,3 @@ function [D1,D2] = getDmats(x)
     D1 = D1/2/dx;
     D2 = D2/dx^2;
 end
-% vx = -conv2(rho,forceX,'same')*dx^2;
-% vy = -conv2(rho,forceY,'same')*dx^2;
-% dt = 10*sqrt(2)*dx/max(max(hypot(vx,vy)));
-% cfl = sqrt(2)*dx/dt;
-
